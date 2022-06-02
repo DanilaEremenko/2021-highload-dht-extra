@@ -1,6 +1,8 @@
 package ru.mail.polis;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class MergeIterator implements Iterator<Record> {
@@ -23,13 +25,13 @@ public class MergeIterator implements Iterator<Record> {
     @Override
     public Record next() {
         NodeData bestData = null;
-
+        List<NodeData> currLayer = new ArrayList<>(peekingIteratorMap.size());
         for (Map.Entry<Node, PeekingIterator<Record>> entry : this.peekingIteratorMap.entrySet()) {
             if (!entry.getValue().hasNext())
                 continue;
 
             NodeData currData = new NodeData(entry.getKey(), entry.getValue(), entry.getValue().peek());
-
+            currLayer.add(currData);
             if (bestData == null) {
                 bestData = currData;
                 continue;
@@ -44,9 +46,7 @@ public class MergeIterator implements Iterator<Record> {
 
         assert bestData != null;
 
-        for (Map.Entry<Node, PeekingIterator<Record>> entry : this.peekingIteratorMap.entrySet()) {
-            NodeData currData = new NodeData(entry.getKey(), entry.getValue(), entry.getValue().peek());
-
+        for (NodeData currData : currLayer) {
             if (!currData.iterator.hasNext())
                 continue;
 
